@@ -1,11 +1,11 @@
 import { Metadata } from 'next';
-import SignInViewPage from '../_components/sigin-view';
+import LoginViewPage from '../_components/login-view';
 
 export const metadata: Metadata = {
-  title: 'Authentication | Sign In',
-  description: 'Sign In page for authentication.'
+  title: 'GEMS | Đăng nhập',
+  description: 'GEMS đăng nhập vào hệ thống.'
 };
 
 export default function Page() {
-  return <SignInViewPage />;
+  return <LoginViewPage />;
 }

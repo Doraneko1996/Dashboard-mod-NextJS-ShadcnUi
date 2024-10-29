@@ -4,9 +4,10 @@ import * as React from 'react';
 import { type DialogProps } from '@radix-ui/react-dialog';
 import { MagnifyingGlassIcon } from '@radix-ui/react-icons';
 import { Command as CommandPrimitive } from 'cmdk';
-
+import * as ScrollAreaPrimitive from '@radix-ui/react-scroll-area';
 import { cn } from '@/lib/utils';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
+
 
 const Command = React.forwardRef<
   React.ElementRef<typeof CommandPrimitive>,
@@ -60,11 +61,27 @@ const CommandList = React.forwardRef<
   React.ElementRef<typeof CommandPrimitive.List>,
   React.ComponentPropsWithoutRef<typeof CommandPrimitive.List>
 >(({ className, ...props }, ref) => (
-  <CommandPrimitive.List
-    ref={ref}
-    className={cn('max-h-[300px] overflow-y-auto overflow-x-hidden', className)}
-    {...props}
-  />
+  <ScrollAreaPrimitive.Root className="relative flex-1">
+    <ScrollAreaPrimitive.Viewport 
+      className="h-full w-full rounded-[inherit]"
+    >
+      <CommandPrimitive.List
+        ref={ref}
+        className={cn(
+          "max-h-[300px] pr-2",
+          className
+        )}
+        {...props}
+      />
+    </ScrollAreaPrimitive.Viewport>
+    <ScrollAreaPrimitive.ScrollAreaScrollbar
+      orientation="vertical"
+      className="flex touch-none select-none transition-colors h-full w-2.5 p-[1px]"
+    >
+      <ScrollAreaPrimitive.ScrollAreaThumb className="relative flex-1 rounded-full bg-border" />
+    </ScrollAreaPrimitive.ScrollAreaScrollbar>
+    <ScrollAreaPrimitive.Corner />
+  </ScrollAreaPrimitive.Root>
 ));
 
 CommandList.displayName = CommandPrimitive.List.displayName;

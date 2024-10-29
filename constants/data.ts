@@ -123,8 +123,8 @@ export type Product = {
 
 export const navItems: NavItem[] = [
   {
-    title: 'Dashboard',
-    url: '/dashboard/overview',
+    title: 'Trang chủ',
+    url: '/dashboard/home',
     icon: 'dashboard',
     isActive: false,
     items: [] // Empty array as there are no child items for Dashboard
@@ -137,11 +137,42 @@ export const navItems: NavItem[] = [
     items: [] // No child items
   },
   {
-    title: 'Product',
-    url: '/dashboard/product',
-    icon: 'product',
-    isActive: false,
-    items: [] // No child items
+    title: 'Quản lý',
+    url: '#',
+    icon: 'database',
+    isActive: true,
+    items: [
+      {
+        title: 'Quản trị viên',
+        url: '/dashboard/manage/admin',
+        icon: 'userCog'
+      },
+      {
+        title: 'Quản lý chuyên môn',
+        url: '/dashboard/manage/manager',
+        icon: 'notebookPen'
+      },
+      {
+        title: 'Giáo viên',
+        url: '/dashboard/manage/teacher',
+        icon: 'book'
+      },
+      {
+        title: 'Trường',
+        url: '/dashboard/manage/school',
+        icon: 'school'
+      },
+      {
+        title: 'Lớp',
+        url: '/dashboard/manage/class',
+        icon: 'bookOpen'
+      },
+      {
+        title: 'Học viên',
+        url: '/dashboard/manage/student',
+        icon: 'pencils'
+      }
+    ] // No child items
   },
   {
     title: 'Account',
