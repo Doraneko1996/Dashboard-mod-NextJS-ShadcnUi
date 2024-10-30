@@ -8,7 +8,8 @@ import { cn } from '@/lib/utils';
 import { Plus } from 'lucide-react';
 import Link from 'next/link';
 import { DataTable } from '@/components/ui/table/data-table';
-import { ColumnDef } from '@tanstack/react-table';
+import { ColumnDef, SortingState } from '@tanstack/react-table';
+import { DataTableResetFilter } from '@/components/ui/table/data-table-reset-filter';
 
 interface ManageListingPageProps<TData> {
     title: string;
@@ -19,8 +20,11 @@ interface ManageListingPageProps<TData> {
     data: TData[];
     columns: ColumnDef<TData, any>[];
     filters?: React.ReactNode;
-    searchKey: string;
     isLoading?: boolean;
+    onSortingChange?: (sorting: SortingState) => void;
+    isAnyFilterActive?: boolean;
+    resetFilters?: () => void;
+    onRefresh?: () => void;
 }
 
 export function ManageListingPage<TData>({
@@ -32,8 +36,11 @@ export function ManageListingPage<TData>({
     data,
     columns,
     filters,
-    searchKey,
-    isLoading = false
+    isLoading = false,
+    onSortingChange,
+    isAnyFilterActive,
+    resetFilters,
+    onRefresh
 }: ManageListingPageProps<TData>) {
     return (
         <PageContainer>
@@ -56,14 +63,25 @@ export function ManageListingPage<TData>({
                 </div>
                 <Separator />
                 <div className="space-y-4">
-                    <div className="flex flex-wrap items-center gap-4">
+                    <div className="flex flex-wrap items-center gap-3">
                         {filters}
+                        {isAnyFilterActive && (
+                            <DataTableResetFilter
+                                isFilterActive={isAnyFilterActive}
+                                onReset={resetFilters}
+                            />
+                        )}
                     </div>
                     <DataTable
                         data={data}
                         columns={columns}
                         totalItems={total}
                         loading={isLoading}
+                        onSortingChange={onSortingChange}
+                        onRefresh={() => {
+                            onSortingChange?.([]);
+                            onRefresh?.();
+                        }}
                     />
                 </div>
             </div>

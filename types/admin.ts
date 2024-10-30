@@ -16,7 +16,7 @@ export interface AdminFilters {
     sortBy?: string;
     order?: 'ASC' | 'DESC';
     search?: string;
-    gender?: number | null;
+    gender?: string | null;
     district?: string | null;
     province?: string;
 }

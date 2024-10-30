@@ -13,16 +13,26 @@ import { ColumnDef } from "@tanstack/react-table";
 import { AlertCircle, MoreHorizontal, Pen, Trash } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Admin } from "@/types/admin";
+import { cn } from "@/lib/utils";
+import { DataTableColumnHeader } from "@/components/ui/table/data-table-column-header";
 
-// Helper function để render cell với warning icon nếu trống
-const renderCellWithWarning = (value: any) => {
+const EmptyCell = ({ 
+    variant = 'warning' 
+}: { 
+    variant?: 'warning' | 'destructive' 
+}) => (
+    <div className={cn(
+        "flex items-center",
+        variant === 'warning' ? "text-warning" : "text-destructive"
+    )}>
+        <AlertCircle className="h-4 w-4 mr-1" />
+        <span>Trống</span>
+    </div>
+);
+
+const renderCell = (value: any, variant: 'warning' | 'destructive' = 'warning') => {
     if (!value || value.trim() === '') {
-        return (
-            <div className="flex items-center text-warning">
-                <AlertCircle className="h-4 w-4 mr-1" />
-                <span>Trống</span>
-            </div>
-        );
+        return <EmptyCell variant={variant} />;
     }
     return value;
 };
@@ -49,38 +59,46 @@ export const columns: ColumnDef<Admin>[] = [
     },
     {
         accessorKey: 'first_name',
-        header: 'Họ',
-        cell: ({ row }) => renderCellWithWarning(row.getValue('first_name'))
+        header: ({ column }) => (
+            <DataTableColumnHeader column={column} title="Họ" />
+        ),
+        cell: ({ row }) => renderCell(row.getValue('first_name'))
     },
     {
         accessorKey: 'last_name',
-        header: 'Tên',
-        cell: ({ row }) => renderCellWithWarning(row.getValue('last_name'))
+        header: ({ column }) => (
+            <DataTableColumnHeader column={column} title="Tên" />
+        ),
+        cell: ({ row }) => renderCell(row.getValue('last_name'))
     },
     {
         accessorKey: 'user_name',
-        header: 'Tên tài khoản',
-        cell: ({ row }) => renderCellWithWarning(row.getValue('user_name'))
+        header: ({ column }) => (
+            <DataTableColumnHeader column={column} title="Tài khoản" />
+        ),
+        cell: ({ row }) => renderCell(row.getValue('user_name'))
     },
     {
         accessorKey: 'email',
         header: 'Email',
-        cell: ({ row }) => renderCellWithWarning(row.getValue('email'))
+        cell: ({ row }) => renderCell(row.getValue('email'))
     },
     {
         accessorKey: 'phone_number',
-        header: 'Số điện thoại',
-        cell: ({ row }) => renderCellWithWarning(row.getValue('phone_number'))
+        header: 'Liên hệ',
+        cell: ({ row }) => renderCell(row.getValue('phone_number'), 'destructive')
     },
     {
         accessorKey: 'address',
         header: 'Địa chỉ',
-        cell: ({ row }) => renderCellWithWarning(row.getValue('address'))
+        cell: ({ row }) => renderCell(row.getValue('address'))
     },
     {
         accessorKey: 'district',
-        header: 'Quận/Huyện',
-        cell: ({ row }) => renderCellWithWarning(row.getValue('district'))
+        header: ({ column }) => (
+            <DataTableColumnHeader column={column} title="Quận/Huyện" />
+        ),
+        cell: ({ row }) => renderCell(row.getValue('district'))
     },
     {
         id: 'actions',

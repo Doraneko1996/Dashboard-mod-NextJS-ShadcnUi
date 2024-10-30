@@ -6,6 +6,7 @@ import { useAdmins } from '@/hooks/use-admins';
 import { DataTableSearch } from '@/components/ui/table/data-table-search';
 import { DataTableFilterBox } from '@/components/ui/table/data-table-filter-box';
 import { GENDER_OPTIONS, DISTRICT_OPTIONS } from '@/components/layout/UserForm/options';
+import { SortingState } from '@tanstack/react-table';
 
 export default function AdminsPage() {
     const {
@@ -14,7 +15,20 @@ export default function AdminsPage() {
         isLoading,
         filters,
         updateFilters,
+        isAnyFilterActive,
+        resetFilters,
+        refresh
     } = useAdmins();
+
+    const handleSortingChange = (sorting: SortingState) => {
+        if (sorting.length > 0) {
+            const { id, desc } = sorting[0];
+            updateFilters({
+                sortBy: id,
+                order: desc ? 'DESC' : 'ASC'
+            });
+        }
+    };
 
     const tableFilters = (
         <>
@@ -22,6 +36,7 @@ export default function AdminsPage() {
                 searchKey="admin"
                 searchQuery={filters.search}
                 setSearchQuery={(value) => updateFilters({ search: value })}
+                minLength={2}
             />
             <DataTableFilterBox
                 filterKey="gender"
@@ -33,7 +48,7 @@ export default function AdminsPage() {
                 filterValue={filters.gender === null ? 'null' : filters.gender?.toString()}
                 setFilterValue={(value) => {
                     updateFilters({
-                        gender: value === 'null' ? null : value ? Number(value) : undefined
+                        gender: value === 'null' ? null : value || undefined
                     });
                 }}
             />
@@ -57,15 +72,18 @@ export default function AdminsPage() {
     return (
         <ManageListingPage
             title="Admin"
-            description="Quản lý danh sách Admin trong hệ thống"
+            description="Quản lý danh sách Admin"
             total={total}
             createLink="/dashboard/manage/admins/create"
-            createButtonLabel="Thêm Admin"
+            createButtonLabel="Admin"
             data={data}
             columns={columns}
-            searchKey="last_name"
             isLoading={isLoading}
             filters={tableFilters}
+            onSortingChange={handleSortingChange}
+            isAnyFilterActive={isAnyFilterActive}
+            resetFilters={resetFilters}
+            onRefresh={refresh}
         />
     );
 }

@@ -79,7 +79,7 @@ export function DataTableFilterBox({
                     variant="secondary"
                     className="rounded-sm px-1 font-normal"
                   >
-                    {selectedValuesSet.size} selected
+                    {selectedValuesSet.size} tùy chọn
                   </Badge>
                 ) : (
                   Array.from(selectedValuesSet).map((value) => (

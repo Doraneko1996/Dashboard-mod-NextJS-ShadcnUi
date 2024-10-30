@@ -143,12 +143,12 @@ export const navItems: NavItem[] = [
     isActive: true,
     items: [
       {
-        title: 'Quản trị viên',
+        title: 'Admin',
         url: '/dashboard/manage/admin',
         icon: 'userCog'
       },
       {
-        title: 'Quản lý chuyên môn',
+        title: 'Chuyên môn',
         url: '/dashboard/manage/manager',
         icon: 'notebookPen'
       },

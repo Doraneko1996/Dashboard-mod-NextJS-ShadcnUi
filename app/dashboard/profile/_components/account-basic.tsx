@@ -5,7 +5,7 @@ import { TriangleAlert } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { UserForm } from '@/components/layout/UserForm/user-form';
-
+import { User } from '@/types';
 interface SubmitValues {
     last_name: string;
     first_name: string;
@@ -23,27 +23,39 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL;
 export default function AccountBasic() {
     const { user, setUser } = useAuth();
 
-    const getMissingFields = () => {
-        const missingFields = [];
-        if (!user?.dob) missingFields.push('Ngày sinh');
-        if (user?.gender === null || user?.gender === undefined) missingFields.push('Giới tính');
-        return missingFields;
-    };
+    const getMissingFields = () => (
+        ['dob', 'gender']
+            .filter(field => user?.[field as keyof User] == null)
+            .map(field => {
+                const labels = {
+                    dob: 'Ngày sinh',
+                    gender: 'Giới tính'
+                };
+                return labels[field as keyof typeof labels];
+            })
+    );
 
     const missingFields = getMissingFields();
 
+    const dob = user?.dob ? new Date(user.dob) : null;
+    
     const defaultValues = {
-        last_name: user?.last_name || '',
-        first_name: user?.first_name || '',
-        gender: user?.gender?.toString() || '',
-        email: user?.email || '',
-        phone_number: user?.phone_number || '',
-        day: user?.dob ? new Date(user.dob).getDate().toString().padStart(2, '0') : '',
-        month: user?.dob ? (new Date(user.dob).getMonth() + 1).toString().padStart(2, '0') : '',
-        year: user?.dob ? new Date(user.dob).getFullYear().toString() : '',
-        address: user?.address || '',
-        district: user?.district || '',
-        province: user?.province || ''
+        // Thông tin cơ bản - sử dụng nullish coalescing
+        last_name: user?.last_name ?? '',
+        first_name: user?.first_name ?? '',
+        gender: user?.gender?.toString() ?? '',
+        email: user?.email ?? '',
+        phone_number: user?.phone_number ?? '',
+        
+        // Xử lý ngày tháng năm - chỉ tính toán nếu có dob
+        day: dob?.getDate().toString().padStart(2, '0') ?? '',
+        month: dob ? (dob.getMonth() + 1).toString().padStart(2, '0') : '',
+        year: dob?.getFullYear().toString() ?? '',
+        
+        // Thông tin địa chỉ
+        address: user?.address ?? '',
+        district: user?.district ?? '',
+        province: user?.province ?? ''
     };
 
     const handleSubmit = async (values: SubmitValues) => {
