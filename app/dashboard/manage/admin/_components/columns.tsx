@@ -2,6 +2,8 @@
 
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
+import { Switch } from "@/components/ui/switch";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -14,12 +16,13 @@ import { AlertCircle, MoreHorizontal, Pen, Trash } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Admin } from "@/types/admin";
 import { cn } from "@/lib/utils";
-import { DataTableColumnHeader } from "@/components/ui/table/data-table-column-header";
+import { DataTableColumnHeader } from "@/components/ui/table/components/data-table-column-header";
+import { useState } from "react";
 
-const EmptyCell = ({ 
-    variant = 'warning' 
-}: { 
-    variant?: 'warning' | 'destructive' 
+const EmptyCell = ({
+    variant = 'warning'
+}: {
+    variant?: 'warning' | 'destructive'
 }) => (
     <div className={cn(
         "flex items-center",
@@ -35,6 +38,36 @@ const renderCell = (value: any, variant: 'warning' | 'destructive' = 'warning') 
         return <EmptyCell variant={variant} />;
     }
     return value;
+};
+
+// Thêm hàm xử lý cập nhật trạng thái
+const handleStatusChange = async (id: number, checked: boolean) => {
+    try {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/${id}/status`, {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                status: checked
+            })
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+            throw new Error(result.message || 'Cập nhật trạng thái thất bại.');
+        }
+
+        toast.success('Cập nhật thành công', {
+            description: result.message
+        });
+
+    } catch (error: any) {
+        toast.error('Cập nhật thất bại', {
+            description: error.message || 'Đã có lỗi xảy ra khi cập nhật trạng thái.'
+        });
+    }
 };
 
 export const columns: ColumnDef<Admin>[] = [
@@ -77,6 +110,35 @@ export const columns: ColumnDef<Admin>[] = [
             <DataTableColumnHeader column={column} title="Tài khoản" />
         ),
         cell: ({ row }) => renderCell(row.getValue('user_name'))
+    },
+    {
+        accessorKey: 'status',
+        header: ({ column }) => (
+            <DataTableColumnHeader column={column} title="Trạng thái" />
+        ),
+        cell: ({ row }) => {
+            const status = row.getValue('status');
+            const [isChecked, setIsChecked] = useState(status === 1);
+
+            return (
+                <div className="flex items-center space-x-2">
+                    <Switch
+                        checked={isChecked}
+                        onCheckedChange={async (checked) => {
+                            setIsChecked(checked);
+                            await handleStatusChange(row.original.id, checked);
+                        }}
+                        className="!bg-green-500"
+                    />
+                    <span className={cn(
+                        "text-xs font-medium",
+                        isChecked ? "text-green-500" : "text-muted-foreground"
+                    )}>
+                        {isChecked ? 'Mở' : 'Khóa'}
+                    </span>
+                </div>
+            );
+        }
     },
     {
         accessorKey: 'email',

@@ -1,5 +1,6 @@
 import AppSidebar from '@/components/layout/app-sidebar';
 import type { Metadata } from 'next';
+import { AuthGuard } from '@/components/auth/auth-guard';
 
 export const metadata: Metadata = {
   title: 'GEMS E-Learning | Dashboard',
@@ -12,8 +13,8 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   return (
-    <>
+    <AuthGuard>
       <AppSidebar>{children}</AppSidebar>
-    </>
+    </AuthGuard>
   );
 }

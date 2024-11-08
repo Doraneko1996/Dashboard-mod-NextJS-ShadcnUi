@@ -43,7 +43,7 @@ export function ManageListingPage<TData>({
     onRefresh
 }: ManageListingPageProps<TData>) {
     return (
-        <PageContainer>
+        <PageContainer scrollable>
             <div className="space-y-4">
                 <div className="flex items-start justify-between">
                     <Heading

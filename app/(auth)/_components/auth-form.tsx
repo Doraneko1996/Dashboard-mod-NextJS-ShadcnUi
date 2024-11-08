@@ -6,7 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import * as z from 'zod';
 import { toast } from 'sonner';
-import { loginAction } from '@/app/actions/auth';
+import { loginAction } from '@/app/(auth)/services/auth-service';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -63,12 +63,11 @@ export default function LoginForm() {
     try {
       setIsLoading(true);
       
-      // Gọi server action đăng nhập
       const result = await loginAction({
         username: values.username,
         password: values.password
       });
-
+  
       if (result.error) {
         toast.error('Đăng nhập thất bại', {
           description: result.error
@@ -76,12 +75,11 @@ export default function LoginForm() {
         form.reset();
         return;
       }
-
-      if (result.success) {
-        // Lưu user vào context
+  
+      if (result.success && result.user) {
+        sessionStorage.setItem('user', JSON.stringify(result.user));
         setUser(result.user);
-        
-        router.push('/dashboard');
+        router.push('/dashboard/home');
         toast.success('Đăng nhập thành công', {
           description: `Chào mừng ${result.user.first_name} ${result.user.last_name}`
         });
@@ -90,9 +88,9 @@ export default function LoginForm() {
       toast.error('Đăng nhập thất bại', {
         description: 'Đã xảy ra lỗi không mong muốn'
       });
-      form.reset();
     } finally {
       setIsLoading(false);
+      form.reset();
     }
   };
 

@@ -44,7 +44,7 @@ export function DataTableSkeleton({
       </ScrollArea>
 
       {/* Pagination Skeleton */}
-      <div className="flex items-center justify-between gap-2 py-4">
+      <div className="flex items-center justify-between gap-2 pb-4">
         <div className="flex-none">
           <Skeleton className="h-4 w-[70px]" />
         </div>

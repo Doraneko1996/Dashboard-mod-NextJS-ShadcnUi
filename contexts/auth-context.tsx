@@ -1,41 +1,52 @@
 'use client';
 
-import { createContext, useContext, useState, useCallback, useEffect } from 'react';
-import { User } from '@/types';
+import { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 
-// Định nghĩa kiểu dữ liệu cho context
+interface User {
+  id: number;
+  user_name: string;
+  email: string;
+  role: number;
+  status: number;
+  first_name: string;
+  last_name: string;
+  phone_number: string;
+  address: string;
+  district: string;
+  province: string;
+  gender?: number;
+  dob?: Date;
+}
+
 interface AuthContextType {
   user: User | null;
   setUser: (user: User | null) => void;
   clearUser: () => void;
 }
 
-// Tạo context
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Provider component
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<User | null>(() => {
+    if (typeof window !== 'undefined') {
+      const savedUser = sessionStorage.getItem('user');
+      return savedUser ? JSON.parse(savedUser) : null;
+    }
+    return null;
+  });
 
   useEffect(() => {
-    // Đọc user data từ cookie khi component mount
-    const cookies = document.cookie.split(';');
-    const userDataCookie = cookies.find(cookie => cookie.trim().startsWith('userData='));
-    
-    if (userDataCookie) {
-      try {
-        const userData = JSON.parse(decodeURIComponent(userDataCookie.split('=')[1].trim()));
-        setUser(userData);
-      } catch (error) {
-        console.error('Error parsing user data from cookie:', error);
-      }
+    if (user) {
+      sessionStorage.setItem('user', JSON.stringify(user));
+    } else {
+      sessionStorage.removeItem('user');
     }
-  }, []);
+  }, [user]);
 
-  // Hàm clear user data
-  const clearUser = useCallback(() => {
+  const clearUser = () => {
     setUser(null);
-  }, []);
+    sessionStorage.removeItem('user');
+  };
 
   return (
     <AuthContext.Provider value={{ user, setUser, clearUser }}>
@@ -44,7 +55,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   );
 }
 
-// Custom hook để sử dụng auth context
 export function useAuth() {
   const context = useContext(AuthContext);
   if (context === undefined) {

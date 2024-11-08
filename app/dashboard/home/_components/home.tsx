@@ -1,3 +1,5 @@
+'use client';
+
 import { CalendarDateRangePicker } from '@/components/date-range-picker';
 import PageContainer from '@/components/layout/page-container';
 import { Button } from '@/components/ui/button';

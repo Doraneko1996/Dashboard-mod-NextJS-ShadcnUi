@@ -1,93 +1,63 @@
-import axios, { AxiosError, InternalAxiosRequestConfig, AxiosResponse } from 'axios';
+import axios from 'axios';
+import { toast } from 'sonner';
 
-// Khởi tạo axios instance với config mặc định
-const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000',
+export const api = axios.create({
+  baseURL: process.env.NEXT_PUBLIC_API_URL,
+  withCredentials: true,
   headers: {
-    'Content-Type': 'application/json'
-  },
-  withCredentials: true
+    'Content-Type': 'application/json',
+  }
 });
 
-// Hàm helper để lấy token từ cookie
-const getAccessTokenFromCookie = (): string | undefined => {
-  const cookies = document.cookie.split(';');
-  return cookies
-    .find(cookie => cookie.trim().startsWith('accessToken='))
-    ?.split('=')[1];
-};
+let isRefreshing = false;
+let failedQueue: any[] = [];
 
-// Hàm helper để log request
-const logRequest = (config: InternalAxiosRequestConfig) => {
-  if (process.env.NODE_ENV !== 'production') {
-    console.log('Request:', {
-      url: config.url,
-      method: config.method,
-      headers: config.headers,
-      data: config.data
-    });
-  }
-};
-
-// Hàm helper để log response
-const logResponse = (response: AxiosResponse) => {
-  if (process.env.NODE_ENV !== 'production') {
-    console.log('Response:', {
-      status: response.status,
-      data: response.data,
-      headers: response.headers
-    });
-  }
-};
-
-// Hàm helper để log error
-const logError = (error: AxiosError) => {
-  if (process.env.NODE_ENV !== 'production') {
-    console.error('Response Error:', {
-      message: error.message,
-      status: error.response?.status,
-      data: error.response?.data,
-      config: {
-        url: error.config?.url,
-        method: error.config?.method
-      }
-    });
-
-    if (error.response?.status === 403) {
-      console.error('Forbidden Error:', {
-        token: error.config?.headers?.Authorization,
-        cookies: document.cookie
-      });
+const processQueue = (error: any, token: string | null = null) => {
+  failedQueue.forEach(prom => {
+    if (error) {
+      prom.reject(error);
+    } else {
+      prom.resolve(token);
     }
-  }
+  });
+  failedQueue = [];
 };
 
-// Request interceptor
-api.interceptors.request.use(
-  (config) => {
-    const accessToken = getAccessTokenFromCookie();
-    if (accessToken) {
-      config.headers.Authorization = `Bearer ${accessToken}`;
-    }
-    logRequest(config);
-    return config;
-  },
-  (error) => {
-    console.error('Request Error:', error);
-    return Promise.reject(error);
-  }
-);
-
-// Response interceptor
 api.interceptors.response.use(
-  (response) => {
-    logResponse(response);
-    return response;
-  },
-  (error: AxiosError) => {
-    logError(error);
+  (response) => response,
+  async (error) => {
+    const originalRequest = error.config;
+
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      if (isRefreshing) {
+        return new Promise((resolve, reject) => {
+          failedQueue.push({ resolve, reject });
+        })
+          .then(() => {
+            return api(originalRequest);
+          })
+          .catch((err) => {
+            return Promise.reject(err);
+          });
+      }
+
+      originalRequest._retry = true;
+      isRefreshing = true;
+
+      try {
+        const { data } = await api.post('/auth/refresh-token');
+        processQueue(null, data.access_token);
+        return api(originalRequest);
+      } catch (refreshError) {
+        processQueue(refreshError, null);
+        window.location.href = '/';
+        toast.error('Phiên đăng nhập đã hết hạn');
+        return Promise.reject(refreshError);
+      } finally {
+        isRefreshing = false;
+      }
+    }
+
     return Promise.reject(error);
   }
 );
-
-export default api;

@@ -52,8 +52,8 @@ import GEMSIcon from '@/public/images/GEMS-icon.svg';
 import SearchInput from '../search-input';
 import ThemeToggle from './ThemeToggle/theme-toggle';
 import { useEffect, useState } from 'react';
-import { NavItem } from '@/types';
-import { logoutAction } from '@/app/actions/auth';
+import { NavItem } from '@/types/nav';
+import { logoutAction } from '@/app/(auth)/services/auth-service';
 import { useAuth } from '@/contexts/auth-context';
 
 // Thông tin công ty
@@ -81,21 +81,21 @@ export default function AppSidebar({
   const handleLogout = async () => {
     try {
       const result = await logoutAction();
-
-      if (result.success) {
-        router.push('/');
-        clearUser(); // Xóa user từ context
-        toast.success('Đăng xuất thành công', {
-          description: 'Hẹn gặp lại sau nhé!'
-        });
-      } else if (result.error) {
+      
+      if (result.error) {
         toast.error('Đăng xuất thất bại', {
           description: result.error
         });
+        return;
       }
+  
+      clearUser();
+      sessionStorage.removeItem('user');
+      router.push('/');
+      toast.success('Đăng xuất thành công');
     } catch (error) {
       toast.error('Đăng xuất thất bại', {
-        description: 'Đã xảy ra lỗi server trong quá trình đăng xuất.'
+        description: 'Đã xảy ra lỗi không mong muốn'
       });
     }
   };
@@ -207,7 +207,7 @@ export default function AppSidebar({
                     {/* Avatar user */}
                     <Avatar className="h-8 w-8 rounded-lg">
                       <AvatarImage
-                        src={user?.image || ''}
+                        // src={user?.image || ''}
                         alt={user?.first_name || ''}
                         loading="lazy"
                       />
@@ -240,7 +240,7 @@ export default function AppSidebar({
                     <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                       <Avatar className="h-8 w-8 rounded-lg">
                         <AvatarImage
-                          src={user?.image || ''}
+                          // src={user?.image || ''}
                           alt={user?.first_name || ''}
                           loading="lazy"
                         />

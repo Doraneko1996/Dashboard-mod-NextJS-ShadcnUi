@@ -27,15 +27,6 @@ export function useAdmins(initialFilters?: AdminFilters) {
         ...initialFilters
     });
 
-    // Cập nhật filters khi page hoặc limit thay đổi
-    useEffect(() => {
-        setFilters(prev => ({
-            ...prev,
-            page: currentPage,
-            limit: pageSize
-        }));
-    }, [currentPage, pageSize]);
-
     const fetchAdmins = useCallback(async () => {
         setIsLoading(true);
         try {

@@ -5,7 +5,7 @@ import { TriangleAlert } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { UserForm } from '@/components/layout/UserForm/user-form';
-import { User } from '@/types';
+import { UpdateUser } from '@/types/update-user';
 interface SubmitValues {
     last_name: string;
     first_name: string;
@@ -25,7 +25,7 @@ export default function AccountBasic() {
 
     const getMissingFields = () => (
         ['dob', 'gender']
-            .filter(field => user?.[field as keyof User] == null)
+            .filter(field => user?.[field as keyof UpdateUser] == null)
             .map(field => {
                 const labels = {
                     dob: 'Ngày sinh',

@@ -1,22 +1,25 @@
 'use client';
 
-import { Metadata } from 'next';
 import Image from 'next/image';
 import GEMSLogo from '@/public/images/GEMS-logo.svg';
-import UserLoginForm from './login-form';
 import { useEffect } from 'react';
 import { toast } from 'sonner';
 
-export const metadata: Metadata = {
-  title: 'Authentication',
-  description: 'Authentication forms built using the components.'
-};
+interface AuthLayoutProps {
+  children: React.ReactNode;
+  title?: string;
+}
 
-export default function LoginViewPage() {
+export function AuthLayout({ 
+  children,
+  title = 'Hệ thống dạy học và ôn luyện tin học quốc tế trực tuyến'
+}: AuthLayoutProps) {
   useEffect(() => {
-    // Kiểm tra cookie redirect khi load trang login
+    // Kiểm tra cookie redirect khi load trang auth
     const cookies = document.cookie.split(';');
-    const redirectCookie = cookies.find(cookie => cookie.trim().startsWith('auth_redirect='));
+    const redirectCookie = cookies.find(cookie => 
+      cookie.trim().startsWith('auth_redirect=')
+    );
 
     if (redirectCookie) {
       // Xóa cookie
@@ -28,8 +31,10 @@ export default function LoginViewPage() {
       });
     }
   }, []);
+
   return (
     <div className="h-screen w-screen flex flex-col items-center justify-center">
+      {/* Header với logo */}
       <div className="absolute top-0 w-full flex flex-col items-center">
         <span className="flex w-full items-center justify-center dark:bg-white">
           <Image
@@ -39,9 +44,15 @@ export default function LoginViewPage() {
             priority
           />
         </span>
-        <h1 className="text-2xl font-semibold mt-2">Hệ thống dạy học và ôn luyện tin học quốc tế trực tuyến</h1>
+        <h1 className="text-2xl font-semibold mt-2">
+          {title}
+        </h1>
       </div>
-      <UserLoginForm />
+
+      {/* Content */}
+      <div className="w-full max-w-[400px] px-4">
+        {children}
+      </div>
     </div>
   );
 }
