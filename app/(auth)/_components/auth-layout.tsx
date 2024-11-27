@@ -4,6 +4,7 @@ import Image from 'next/image';
 import GEMSLogo from '@/public/images/GEMS-logo.svg';
 import { useEffect } from 'react';
 import { toast } from 'sonner';
+import { useSession } from 'next-auth/react';
 
 interface AuthLayoutProps {
   children: React.ReactNode;
@@ -14,23 +15,22 @@ export function AuthLayout({
   children,
   title = 'Hệ thống dạy học và ôn luyện tin học quốc tế trực tuyến'
 }: AuthLayoutProps) {
+  const { status } = useSession();
+
   useEffect(() => {
-    // Kiểm tra cookie redirect khi load trang auth
-    const cookies = document.cookie.split(';');
-    const redirectCookie = cookies.find(cookie => 
-      cookie.trim().startsWith('auth_redirect=')
-    );
-
-    if (redirectCookie) {
-      // Xóa cookie
-      document.cookie = 'auth_redirect=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
-
-      // Hiển thị thông báo
-      toast.error('Truy cập bị từ chối', {
-        description: 'Bạn cần đăng nhập để truy cập vào trang này!'
-      });
+    // Logic hiển thị toast khi đăng xuất
+    const urlParams = new URLSearchParams(window.location.search);
+    if (status === 'unauthenticated') {
+      if (urlParams.get('logout') === 'true') {
+        toast.success('Đăng xuất thành công');
+      } else if (urlParams.get('error') === 'token_expired') {
+        toast.error('Phiên đăng nhập đã hết hạn', {
+          description: 'Vui lòng đăng nhập lại'
+        });
+      }
     }
-  }, []);
+    window.history.replaceState({}, '', window.location.pathname);
+  }, [status]);
 
   return (
     <div className="h-screen w-screen flex flex-col items-center justify-center">
@@ -44,7 +44,7 @@ export function AuthLayout({
             priority
           />
         </span>
-        <h1 className="text-2xl font-semibold mt-2">
+        <h1 className="text-sm md:text-2xl font-semibold mt-2">
           {title}
         </h1>
       </div>

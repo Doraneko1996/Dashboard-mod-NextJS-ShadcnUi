@@ -14,7 +14,9 @@ const nextConfig = {
       }
     ]
   },
-  transpilePackages: ['geist']
+  transpilePackages: ['geist'],
+  // Tắt react strict mode để test render
+  reactStrictMode: true,
 };
 
 module.exports = nextConfig;

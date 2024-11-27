@@ -27,7 +27,6 @@ import { usePathname } from 'next/navigation';
 import * as React from 'react';
 import { Icons } from '../icons';
 import GEMSIcon from '@/public/images/GEMS-icon.svg';
-import { useEffect, useState } from 'react';
 import { NavItem } from '@/types/nav';
 import { UserNav } from './user-nav';
 
@@ -39,15 +38,7 @@ export const company = {
 };
 
 export default function AppSidebar() {
-  const [mounted, setMounted] = useState(false);
   const pathname = usePathname();
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  // Không render gì nếu component chưa được mount
-  if (!mounted) return null;
 
   return (
     <Sidebar collapsible="icon">

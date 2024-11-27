@@ -1,24 +1,22 @@
-import { NextResponse } from 'next/server';
-import type { NextRequest } from 'next/server';
+import { auth } from "@/auth"
+import { NextResponse } from "next/server"
 
-export function middleware(request: NextRequest) {
-  const path = request.nextUrl.pathname;
-  const accessToken = request.cookies.get('accessToken');
-  const refreshToken = request.cookies.get('refreshToken');
+export default auth((req) => {
+  const isLoggedIn = !!req.auth;
+  const isOnDashboard = req.nextUrl.pathname.startsWith('/dashboard');
+  const isLoginPage = req.nextUrl.pathname === '/';
 
-  // Nếu không có cả 2 token và đang ở route protected
-  if (!accessToken && !refreshToken && path.startsWith('/dashboard')) {
-    return NextResponse.redirect(new URL('/', request.url));
+  if (isOnDashboard && !isLoggedIn) {
+    return Response.redirect(new URL('/', req.url));
   }
 
-  // Nếu có token và đang ở trang login
-  if ((accessToken || refreshToken) && path === '/') {
-    return NextResponse.redirect(new URL('/dashboard/home', request.url));
+  if (isLoginPage && isLoggedIn) {
+    return Response.redirect(new URL('/dashboard/home', req.url));
   }
 
   return NextResponse.next();
-}
+})
 
 export const config = {
-  matcher: ['/', '/dashboard/:path*']
-};
+  matcher: ['/((?!api|_next/static|_next/image|favicon.ico).*)'],
+}

@@ -1,11 +1,15 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { TriangleAlert } from 'lucide-react';
-import { useAuth } from '@/contexts/auth-context';
+import { useSession } from 'next-auth/react';
+
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { UserForm } from '@/components/layout/UserForm/user-form';
 import { UpdateUser } from '@/types/update-user';
+import { LoadingSpinner } from '@/components/ui/loading-spinner';
+
 interface SubmitValues {
     last_name: string;
     first_name: string;
@@ -18,10 +22,43 @@ interface SubmitValues {
     province?: string | null;
 }
 
+interface User extends UpdateUser {
+    id: number;
+}
+
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export default function AccountBasic() {
-    const { user, setUser } = useAuth();
+    const { data: session } = useSession();
+    const [user, setUser] = useState<User | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchUserData = async () => {
+            try {
+                const response = await fetch(`${API_URL}/auth/me`, {
+                    headers: {
+                        'Authorization': `Bearer ${session?.user?.access_token}`
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Không thể lấy thông tin người dùng');
+                }
+
+                const data = await response.json();
+                setUser(data.user);
+            } catch (error) {
+                toast.error('Lỗi', {
+                    description: 'Không thể lấy thông tin người dùng'
+                });
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchUserData();
+    }, []);
 
     const getMissingFields = () => (
         ['dob', 'gender']
@@ -36,36 +73,30 @@ export default function AccountBasic() {
     );
 
     const missingFields = getMissingFields();
-
     const dob = user?.dob ? new Date(user.dob) : null;
     
     const defaultValues = {
-        // Thông tin cơ bản - sử dụng nullish coalescing
         last_name: user?.last_name ?? '',
         first_name: user?.first_name ?? '',
         gender: user?.gender?.toString() ?? '',
         email: user?.email ?? '',
         phone_number: user?.phone_number ?? '',
-        
-        // Xử lý ngày tháng năm - chỉ tính toán nếu có dob
         day: dob?.getDate().toString().padStart(2, '0') ?? '',
         month: dob ? (dob.getMonth() + 1).toString().padStart(2, '0') : '',
         year: dob?.getFullYear().toString() ?? '',
-        
-        // Thông tin địa chỉ
         address: user?.address ?? '',
         district: user?.district ?? '',
         province: user?.province ?? ''
     };
 
     const handleSubmit = async (values: SubmitValues) => {
-        console.log(values);
         try {
             const response = await fetch(`${API_URL}/users/${user?.id}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json'
                 },
+                credentials: 'include',
                 body: JSON.stringify(values)
             });
 
@@ -85,6 +116,10 @@ export default function AccountBasic() {
             });
         }
     };
+
+    if (isLoading) {
+        return <LoadingSpinner />;
+    }
 
     return (
         <>

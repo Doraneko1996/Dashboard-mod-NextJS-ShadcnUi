@@ -10,7 +10,7 @@ interface LoadingSpinnerProps {
 
 export function LoadingSpinner({ className, size = 48 }: LoadingSpinnerProps) {
   return (
-    <div className="w-full h-full flex items-center justify-center">
+    <div className="h-[calc(100vh-200px)] flex items-center justify-center">
       <Loader2 
         className={cn("animate-spin text-primary", className)} 
         size={size}

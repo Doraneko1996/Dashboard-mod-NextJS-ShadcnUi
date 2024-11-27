@@ -1,11 +1,15 @@
 'use client';
 
+import { useSession } from 'next-auth/react';
 import PageContainer from '@/components/layout/page-container';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import AccountBasic from './account-basic';
 import AccountDetail from './account-detail';
 
 export default function ProfileViewPage() {
+  const { data: session } = useSession();
+  const isTeacher = session?.user?.role === 2;
+
   return (
     <PageContainer>
       <div className="space-y-4">
@@ -18,9 +22,11 @@ export default function ProfileViewPage() {
             <TabsTrigger value="account-basic">
               Thông tin cơ bản
             </TabsTrigger>
-            <TabsTrigger value="account-advanced">
-              Thông tin chi tiết
-            </TabsTrigger>
+            {isTeacher && (
+              <TabsTrigger value="account-advanced">
+                Thông tin chi tiết
+              </TabsTrigger>
+            )}
             <TabsTrigger value="change-password">
               Đổi mật khẩu
             </TabsTrigger>
@@ -28,9 +34,11 @@ export default function ProfileViewPage() {
           <TabsContent value="account-basic" className="space-y-4">
             <AccountBasic />
           </TabsContent>
-          <TabsContent value="account-advanced" className="space-y-4">
-            <AccountDetail />
-          </TabsContent>
+          {isTeacher && (
+            <TabsContent value="account-advanced" className="space-y-4">
+              <AccountDetail />
+            </TabsContent>
+          )}
           <TabsContent value="change-password" className="space-y-4">
             {/* Nội dung cho phần đổi mật khẩu */}
           </TabsContent>

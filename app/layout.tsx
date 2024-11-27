@@ -1,10 +1,11 @@
 import Providers from '@/components/layout/providers';
+import { SessionProvider } from 'next-auth/react';
 import { Toaster } from '@/components/ui/sonner';
 import type { Metadata } from 'next';
 import { Roboto } from 'next/font/google';
 import NextTopLoader from 'nextjs-toploader';
 import './globals.css';
-import { AuthProvider } from '@/contexts/auth-context';
+import { auth } from '@/auth';
 
 export const metadata: Metadata = {
   title: 'Next Shadcn',
@@ -22,6 +23,8 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const session = await auth()
+
   return (
     <html
       lang="vi"
@@ -32,9 +35,13 @@ export default async function RootLayout({
         <NextTopLoader showSpinner={false} />
         <Providers>
           <Toaster richColors theme="dark" />
-          <AuthProvider>
+          <SessionProvider 
+            session={session}
+            refetchOnWindowFocus={false}
+            refetchWhenOffline={false}
+          >
             {children}
-          </AuthProvider>
+          </SessionProvider>
         </Providers>
       </body>
     </html>
