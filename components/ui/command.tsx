@@ -8,7 +8,6 @@ import * as ScrollAreaPrimitive from '@radix-ui/react-scroll-area';
 import { cn } from '@/lib/utils';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 
-
 const Command = React.forwardRef<
   React.ElementRef<typeof CommandPrimitive>,
   React.ComponentPropsWithoutRef<typeof CommandPrimitive>
@@ -68,7 +67,7 @@ const CommandList = React.forwardRef<
       <CommandPrimitive.List
         ref={ref}
         className={cn(
-          "max-h-[300px] pr-2",
+          "max-h-[300px]",
           className
         )}
         {...props}
@@ -78,7 +77,7 @@ const CommandList = React.forwardRef<
       orientation="vertical"
       className="flex touch-none select-none transition-colors h-full w-2.5 p-[1px]"
     >
-      <ScrollAreaPrimitive.ScrollAreaThumb className="relative flex-1 rounded-full bg-border" />
+      {/* <ScrollAreaPrimitive.ScrollAreaThumb className="relative flex-1 rounded-full bg-border" /> */}
     </ScrollAreaPrimitive.ScrollAreaScrollbar>
     <ScrollAreaPrimitive.Corner />
   </ScrollAreaPrimitive.Root>

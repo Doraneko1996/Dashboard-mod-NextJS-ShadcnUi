@@ -2,7 +2,6 @@
 
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { Table } from '@/components/ui/table';
-import { useTableResize } from './hooks/use-table-rezise';
 import { useTableState } from './hooks/use-table-state';
 import { DataTableHeader } from './components/data-table-header';
 import { DataTableBody } from './components/data-table-body';
@@ -22,7 +21,6 @@ export function DataTable<TData, TValue>({
   onRefresh,
   pageSizeOptions = [10, 50, 100, 200, 500]
 }: DataTableProps<TData, TValue>) {
-  const { width: tableWidth, updateWidth } = useTableResize('data-table-container');
   const {
     pageSize,
     sorting,
@@ -66,18 +64,12 @@ export function DataTable<TData, TValue>({
   }
 
   return (
-    <div 
-      id="data-table-container" 
-      className="space-y-4"
-      onTransitionEnd={updateWidth}
-    >
-      <ScrollArea className="rounded-md border">
-        <div className="pl-2" style={{ width: tableWidth }}>
-          <Table>
-            <DataTableHeader table={table} />
-            <DataTableBody table={table} columns={columns} />
-          </Table>
-        </div>
+    <div className="space-y-4">
+      <ScrollArea className="grid h-[calc(80vh-220px)] rounded-md border md:h-[calc(90dvh-240px)]">
+        <Table className="relative">
+          <DataTableHeader table={table} />
+          <DataTableBody table={table} columns={columns} />
+        </Table>
         <ScrollBar orientation="horizontal" />
       </ScrollArea>
 

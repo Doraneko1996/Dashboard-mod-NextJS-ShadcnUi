@@ -462,7 +462,7 @@ export function UserForm({ defaultValues, onSubmit, mode }: UserFormProps) {
                                     </FormControl>
                                     <SelectContent>
                                         <SelectItem value="HCM">TP. Hồ Chí Minh</SelectItem>
-                                        <SelectItem value="TĐ">TP. Thủ Đức</SelectItem>
+                                        <SelectItem value="TDUC">TP. Thủ Đức</SelectItem>
                                         <SelectItem value="LA">Tỉnh Long An</SelectItem>
                                     </SelectContent>
                                 </Select>

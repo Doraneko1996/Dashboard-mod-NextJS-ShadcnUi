@@ -11,13 +11,50 @@ import {
     DropdownMenuLabel,
     DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
-import { ColumnDef } from "@tanstack/react-table";
+import { ColumnDef, Row } from "@tanstack/react-table";
 import { AlertCircle, MoreHorizontal, Pen, Trash } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Admin } from "@/types/admin";
 import { cn } from "@/lib/utils";
 import { DataTableColumnHeader } from "@/components/ui/table/components/data-table-column-header";
-import { useState } from "react";
+import { memo, useState, useCallback } from "react";
+
+const StatusCell = memo(({ row }: { row: Row<Admin> }) => {
+    const status = row.getValue('status');
+    const [isChecked, setIsChecked] = useState(status === 1);
+
+    const handleChange = useCallback(async (checked: boolean) => {
+        try {
+            setIsChecked(checked);
+            await handleStatusChange(row.original.id, checked);
+        } catch (error) {
+            // Nếu có lỗi, revert lại state
+            setIsChecked(!checked);
+            throw error;
+        }
+    }, [row.original.id]);
+
+    return (
+        <div className="flex items-center space-x-2">
+            <Switch
+                checked={isChecked}
+                onCheckedChange={handleChange}
+                className={cn(
+                    "!bg-green-500",
+                    !isChecked && "!bg-zinc-500"
+                )}
+            />
+            <span className={cn(
+                "text-xs font-medium",
+                isChecked ? "text-green-500" : "text-muted-foreground"
+            )}>
+                {isChecked ? 'Mở' : 'Khóa'}
+            </span>
+        </div>
+    );
+});
+
+StatusCell.displayName = 'StatusCell';
 
 const EmptyCell = ({
     variant = 'warning'
@@ -116,29 +153,7 @@ export const columns: ColumnDef<Admin>[] = [
         header: ({ column }) => (
             <DataTableColumnHeader column={column} title="Trạng thái" />
         ),
-        cell: ({ row }) => {
-            const status = row.getValue('status');
-            const [isChecked, setIsChecked] = useState(status === 1);
-
-            return (
-                <div className="flex items-center space-x-2">
-                    <Switch
-                        checked={isChecked}
-                        onCheckedChange={async (checked) => {
-                            setIsChecked(checked);
-                            await handleStatusChange(row.original.id, checked);
-                        }}
-                        className="!bg-green-500"
-                    />
-                    <span className={cn(
-                        "text-xs font-medium",
-                        isChecked ? "text-green-500" : "text-muted-foreground"
-                    )}>
-                        {isChecked ? 'Mở' : 'Khóa'}
-                    </span>
-                </div>
-            );
-        }
+        cell: ({ row }) => <StatusCell row={row} />
     },
     {
         accessorKey: 'email',

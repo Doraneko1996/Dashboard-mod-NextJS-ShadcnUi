@@ -1,56 +1,51 @@
 'use server'
 
 import { cookies } from 'next/headers';
+import { LoginCredentials, AuthResponse } from './auth.types';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
-export async function loginAction(credentials: {
-  username: string;
-  password: string;
-}) {
+export async function loginAction(credentials: LoginCredentials): Promise<AuthResponse> {
   try {
-    const loginResponse = await fetch(`${API_URL}/auth/login`, {
+    const response = await fetch(`${API_URL}/auth/login`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
       body: JSON.stringify({
-        user_name: credentials.username,
+        user_name: credentials.user_name,
         password: credentials.password
       }),
     });
 
-    const loginData = await loginResponse.json();
+    const data = await response.json();
 
-    if (!loginResponse.ok) {
-      return { error: loginData.message };
+    if (!response.ok) {
+      return { error: data.message };
     }
 
-    cookies().set('accessToken', loginData.access_token, {
+    cookies().set('accessToken', data.access_token, {
       httpOnly: true,
-      secure: true
+      secure: process.env.NODE_ENV === 'production'
     });
-    cookies().set('refreshToken', loginData.refresh_token, {
+    cookies().set('refreshToken', data.refresh_token, {
       httpOnly: true,
-      secure: true
+      secure: process.env.NODE_ENV === 'production'
     });
 
     return {
       success: true,
-      user: loginData.user,
-      message: loginData.message
+      user: data.user,
+      message: data.message
     };
-
-  } catch (error: any) {
-    console.error('Error in loginAction:', error);
-    return { 
+  } catch (error) {
+    console.error('Login error:', error);
+    return {
       error: 'Đã xảy ra lỗi server trong quá trình đăng nhập.'
     };
   }
 }
 
-export async function logoutAction() {
+export async function logoutAction(): Promise<AuthResponse> {
   try {
     const response = await fetch(`${API_URL}/auth/logout`, {
       method: 'POST',

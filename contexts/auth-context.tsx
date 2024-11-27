@@ -1,23 +1,7 @@
 'use client';
 
-import { createContext, useContext, useState, ReactNode, useEffect } from 'react';
-
-interface User {
-  id: number;
-  user_name: string;
-  email: string;
-  role: number;
-  status: number;
-  first_name: string;
-  last_name: string;
-  phone_number: string;
-  address: string;
-  district: string;
-  province: string;
-  gender?: number;
-  dob?: Date;
-}
-
+import { createContext, useContext, useState, useEffect } from 'react';
+import { User } from '@/services/auth/auth.types';
 interface AuthContextType {
   user: User | null;
   setUser: (user: User | null) => void;

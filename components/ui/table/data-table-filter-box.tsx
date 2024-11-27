@@ -22,16 +22,18 @@ import { PlusCircledIcon } from '@radix-ui/react-icons';
 import { CheckIcon } from 'lucide-react';
 import React from 'react';
 
+interface FilterOption {
+  value: string;
+  label: string;
+  icon?: React.ComponentType<{ className?: string }>;
+}
+
 interface FilterBoxProps {
   filterKey: string;
   title: string;
-  options: {
-    label: string;
-    value: string;
-    icon?: React.ComponentType<{ className?: string }>;
-  }[];
-  filterValue?: string;
-  setFilterValue: (value: string | null) => void;
+  options: FilterOption[];
+  setFilterValue: (value: string | null) => Promise<URLSearchParams> | void;
+  filterValue: string;
 }
 
 export function DataTableFilterBox({
@@ -53,6 +55,7 @@ export function DataTableFilterBox({
     } else {
       newSet.add(value);
     }
+    console.log('newSet:', newSet);
     setFilterValue(Array.from(newSet).join('.') || null);
   };
 
@@ -129,20 +132,20 @@ export function DataTableFilterBox({
                 </CommandItem>
               ))}
             </CommandGroup>
+            {selectedValuesSet.size > 0 && (
+              <>
+                <CommandSeparator />
+                <CommandGroup>
+                  <CommandItem
+                    onSelect={resetFilter}
+                    className="justify-center text-center"
+                  >
+                    Xóa bộ lọc
+                  </CommandItem>
+                </CommandGroup>
+              </>
+            )}
           </CommandList>
-          {selectedValuesSet.size > 0 && (
-            <>
-              <CommandSeparator />
-              <CommandGroup>
-                <CommandItem
-                  onSelect={resetFilter}
-                  className="justify-center text-center"
-                >
-                  Xóa bộ lọc
-                </CommandItem>
-              </CommandGroup>
-            </>
-          )}
         </Command>
       </PopoverContent>
     </Popover>
