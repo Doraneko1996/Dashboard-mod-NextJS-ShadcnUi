@@ -1,10 +1,9 @@
-import Providers from '@/components/layout/providers';
-import { SessionProvider } from 'next-auth/react';
 import { Toaster } from '@/components/ui/sonner';
 import type { Metadata } from 'next';
 import { Roboto } from 'next/font/google';
 import NextTopLoader from 'nextjs-toploader';
 import './globals.css';
+import Providers from '@/components/layout/providers';
 import { auth } from '@/auth';
 
 export const metadata: Metadata = {
@@ -23,7 +22,7 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const session = await auth()
+  const session = await auth();
 
   return (
     <html
@@ -33,15 +32,9 @@ export default async function RootLayout({
     >
       <body className={'overflow-hidden'}>
         <NextTopLoader showSpinner={false} />
-        <Providers>
+        <Providers session={session}>
           <Toaster richColors theme="dark" />
-          <SessionProvider 
-            session={session}
-            refetchOnWindowFocus={false}
-            refetchWhenOffline={false}
-          >
-            {children}
-          </SessionProvider>
+          {children}
         </Providers>
       </body>
     </html>

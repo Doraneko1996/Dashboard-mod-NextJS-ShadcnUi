@@ -2,6 +2,7 @@ import AppSidebar from '@/components/layout/app-sidebar';
 import type { Metadata } from 'next';
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
 import Header from '@/components/layout/header';
+import { cookies } from 'next/headers';
 
 export const metadata: Metadata = {
   title: 'GEMS E-Learning | Dashboard',
@@ -13,8 +14,11 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
+  // Lưu trạng thái đóng mở của sidebar trong cookie.
+  const cookieStore = cookies();
+  const defaultOpen = cookieStore.get('sidebar:state')?.value === 'true';
   return (
-    <SidebarProvider>
+    <SidebarProvider defaultOpen={defaultOpen}>
       <AppSidebar />
       <SidebarInset>
         <Header />

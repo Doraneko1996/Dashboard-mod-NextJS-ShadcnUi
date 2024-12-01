@@ -1,179 +1,113 @@
 'use client';
 
-import { useState } from 'react';
-// import { useRouter } from 'next/navigation';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useForm } from 'react-hook-form';
-import { signIn, useSession } from 'next-auth/react';
-import * as z from 'zod';
-import { toast } from 'sonner';
+import { useFormState, useFormStatus } from 'react-dom';
+import { useSearchParams } from 'next/navigation';
+import { useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { Button } from '@/components/ui/button';
 import { Loader2 } from 'lucide-react';
+import { toast } from 'sonner';
+import { authenticate } from '../actions';
+import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage
-} from '@/components/ui/form';
+import { PasswordInput } from '@/components/ui/password-input';
 import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
-  CardTitle
+  CardTitle,
 } from '@/components/ui/card';
 
-const loginSchema = z.object({
-  username: z
-    .string()
-    .min(1, { message: 'Tên tài khoản không được để trống' })
-    .min(4, { message: 'Tên tài khoản phải có ít nhất 4 ký tự' })
-    .max(20, { message: 'Tên tài khoản không được quá 20 ký tự' }),
-  password: z
-    .string()
-    .min(1, { message: 'Mật khẩu không được để trống' })
-    .min(6, { message: 'Mật khẩu phải có ít nhất 6 ký tự' })
-});
+const LoginHeader = () => (
+  <CardHeader>
+    <CardTitle className="text-2xl font-semibold text-center">
+      Đăng nhập
+    </CardTitle>
+    <CardDescription className="text-center text-sm text-muted-foreground">
+      Đăng nhập bằng tài khoản GEMS của bạn
+    </CardDescription>
+  </CardHeader>
+);
 
-type LoginFormValues = z.infer<typeof loginSchema>;
+const SubmitButton = () => {
+  const { pending } = useFormStatus();
 
-export default function LoginForm() {
-  const [isLoading, setIsLoading] = useState(false);
-  // const router = useRouter();
-  const { data: session, update } = useSession();
+  return (
+    <Button
+      className="w-full dark:text-white bg-red-900 hover:bg-red-950"
+      type="submit"
+      disabled={pending}
+    >
+      {pending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+      {pending ? "Đang đăng nhập..." : "Đăng nhập"}
+    </Button>
+  );
+};
 
-  const form = useForm<LoginFormValues>({
-    resolver: zodResolver(loginSchema),
-    defaultValues: {
-      username: '',
-      password: ''
-    }
-  });
+const LoginForm = () => {
+  const searchParams = useSearchParams();
+  const callbackUrl = searchParams.get('callbackUrl');
+  const [state, dispatch] = useFormState(authenticate, undefined);
+  const formRef = useRef<HTMLFormElement>(null);
 
-  const onSubmit = async (values: LoginFormValues) => {
-    try {
-      setIsLoading(true)
-  
-      const result = await signIn('credentials', {
-        username: values.username,
-        password: values.password,
-        redirect: false,
-      });
-
-      if (result?.error) {
-        toast.error('Đăng nhập thất bại', {
-          description: result.error
-        });
-        form.reset();
-        return;
-      }
-
-      if (result?.ok) {
-        await update();
-
-        toast.success('Đăng nhập thành công');
-        // router.push('/dashboard/home');
-        window.location.href = '/dashboard/home';
-      }
-    } catch (error) {
+  useEffect(() => {
+    if (state?.status === 'success') {
+      window.location.href = callbackUrl || '/dashboard/home';
+    } else if (state?.status === 'error') {
       toast.error('Đăng nhập thất bại', {
-        description: 'Đã xảy ra lỗi không mong muốn'
-      })
-    } finally {
-      setIsLoading(false)
+        description: state.message
+      });
+      formRef.current?.reset();
     }
-  }
+  }, [state, callbackUrl]);
 
   return (
     <Card className="max-w-[400px] w-full">
-      <CardHeader>
-        <CardTitle className="text-2xl font-semibold text-center">
-          Đăng nhập
-        </CardTitle>
-        <CardDescription className="flex items-center justify-center text-sm text-muted-foreground">
-          Đăng nhập bằng tài khoản GEMS của bạn
-        </CardDescription>
-      </CardHeader>
+      <LoginHeader />
 
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)}>
-          <CardContent className="space-y-4">
-            {/* Field tài khoản */}
-            <FormField
-              control={form.control}
-              name="username"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Tài khoản</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="Tên tài khoản của bạn"
-                      disabled={isLoading}
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            {/* Field mật khẩu */}
-            <FormField
-              control={form.control}
-              name="password"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Mật khẩu</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="password"
-                      placeholder="Mật khẩu đăng nhập"
-                      disabled={isLoading}
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </CardContent>
-
-          <CardFooter>
-            <div className="w-full">
-              {/* Nút đăng nhập */}
-              <Button
-                className="w-full dark:text-white bg-red-900 hover:bg-red-950"
-                type="submit"
-                disabled={isLoading}
-              >
-                {isLoading ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Đang đăng nhập, vui lòng chờ...
-                  </>
-                ) : (
-                  'Đăng nhập'
-                )}
-              </Button>
-
-              <Separator className="my-4" />
-
-              {/* Link quên mật khẩu */}
-              <div className="w-full text-center">
-                <Link href="/reset-pw" className="hover:underline">
-                  Bạn quên mật khẩu?
-                </Link>
-              </div>
+      <form ref={formRef} action={dispatch} className="space-y-4">
+        <CardContent className="space-y-4">
+          <div className="grid gap-4">
+            <div className="grid gap-2">
+              <Label htmlFor="username">Tên tài khoản</Label>
+              <Input
+                id="username"
+                name="username"
+                type="text"
+                placeholder="Tên tài khoản của bạn"
+                autoComplete="username"
+                required
+              />
             </div>
-          </CardFooter>
-        </form>
-      </Form>
+
+            <div className="grid gap-2">
+              <Label htmlFor="password">Mật khẩu</Label>
+              <PasswordInput
+                id="password"
+                name="password"
+                placeholder="Mật khẩu đăng nhập"
+                required
+              />
+            </div>
+            <SubmitButton />
+
+            <Separator />
+
+            <div className="w-full text-center">
+              <Link
+                href="/reset-pw"
+                className="text-sm hover:underline text-muted-foreground"
+              >
+                Bạn quên mật khẩu?
+              </Link>
+            </div>
+          </div>
+        </CardContent>
+      </form>
     </Card>
   );
-}
+};
+
+export default LoginForm;

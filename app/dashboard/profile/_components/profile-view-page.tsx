@@ -5,6 +5,7 @@ import PageContainer from '@/components/layout/page-container';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import AccountBasic from './account-basic';
 import AccountDetail from './account-detail';
+import AccountChangePw from './account-changepw';
 
 export default function ProfileViewPage() {
   const { data: session } = useSession();
@@ -40,7 +41,7 @@ export default function ProfileViewPage() {
             </TabsContent>
           )}
           <TabsContent value="change-password" className="space-y-4">
-            {/* Nội dung cho phần đổi mật khẩu */}
+            <AccountChangePw />
           </TabsContent>
         </Tabs>
       </div>

@@ -111,3 +111,11 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Hide password toggle in MS browsers */
+.hide-password-toggle::-ms-reveal,
+.hide-password-toggle::-ms-clear {
+    visibility: hidden;
+    pointer-events: none;
+    display: none;
+}

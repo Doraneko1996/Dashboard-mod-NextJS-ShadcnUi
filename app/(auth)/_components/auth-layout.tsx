@@ -3,34 +3,51 @@
 import Image from 'next/image';
 import GEMSLogo from '@/public/images/GEMS-logo.svg';
 import { useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { toast } from 'sonner';
-import { useSession } from 'next-auth/react';
 
 interface AuthLayoutProps {
   children: React.ReactNode;
   title?: string;
 }
 
-export function AuthLayout({ 
+export function AuthLayout({
   children,
   title = 'Hệ thống dạy học và ôn luyện tin học quốc tế trực tuyến'
 }: AuthLayoutProps) {
-  const { status } = useSession();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const message = searchParams.get('logout');
 
   useEffect(() => {
-    // Logic hiển thị toast khi đăng xuất
-    const urlParams = new URLSearchParams(window.location.search);
-    if (status === 'unauthenticated') {
-      if (urlParams.get('logout') === 'true') {
-        toast.success('Đăng xuất thành công');
-      } else if (urlParams.get('error') === 'token_expired') {
-        toast.error('Phiên đăng nhập đã hết hạn', {
-          description: 'Vui lòng đăng nhập lại'
+    const messages = {
+      success: {
+        type: 'success',
+        title: 'Đăng xuất thành công',
+        description: 'Hẹn gặp bạn lần sau.'
+      },
+      password_changed: {
+        type: 'success',
+        title: 'Đổi mật khẩu thành công',
+        description: 'Vui lòng đăng nhập lại với mật khẩu mới.'
+      }
+    } as const;
+
+    const messageConfig = messages[message as keyof typeof messages];
+    if (messageConfig) {
+      if (messageConfig.type === 'success') {
+        toast.success(messageConfig.title, {
+          description: messageConfig.description
+        });
+      } else {
+        toast.warning(messageConfig.title, {
+          description: messageConfig.description
         });
       }
+
+      router.replace('/');
     }
-    window.history.replaceState({}, '', window.location.pathname);
-  }, [status]);
+  }, [message, router]);
 
   return (
     <div className="h-screen w-screen flex flex-col items-center justify-center">

@@ -1,22 +1,33 @@
-import { auth } from "@/auth"
-import { NextResponse } from "next/server"
+import { NextResponse } from "next/server";
+import { auth } from "@/auth";
 
-export default auth((req) => {
-  const isLoggedIn = !!req.auth;
-  const isOnDashboard = req.nextUrl.pathname.startsWith('/dashboard');
-  const isLoginPage = req.nextUrl.pathname === '/';
+export default auth(async function middleware(req) {
+  const session = await auth();
+  const { pathname } = req.nextUrl;
+  
+  const isLoggedIn = !!session?.user;
+  const isOnDashboard = pathname.startsWith('/dashboard');
+  const isOnLoginPage = pathname === '/';
 
+  // Nếu đang ở dashboard mà chưa đăng nhập -> chuyển về trang login
   if (isOnDashboard && !isLoggedIn) {
-    return Response.redirect(new URL('/', req.url));
+    const callbackUrl = encodeURIComponent(pathname);
+    return NextResponse.redirect(
+      new URL(`/?callbackUrl=${callbackUrl}`, req.url)
+    );
   }
 
-  if (isLoginPage && isLoggedIn) {
-    return Response.redirect(new URL('/dashboard/home', req.url));
+  // Nếu đã đăng nhập mà vào trang login -> chuyển về dashboard
+  if (isOnLoginPage && isLoggedIn) {
+    const callbackUrl = req.nextUrl.searchParams.get("callbackUrl");
+    return NextResponse.redirect(
+      new URL(callbackUrl || "/dashboard/home", req.url)
+    );
   }
 
   return NextResponse.next();
-})
+});
 
-export const config = {
-  matcher: ['/((?!api|_next/static|_next/image|favicon.ico).*)'],
-}
+export const config = { 
+  matcher: ['/', '/dashboard/:path*']
+};
